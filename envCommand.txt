@@ -1,0 +1,6 @@
+& d:/DiplomDetect/env/Scripts/Activate.ps1
+
+mail: ml@gmail.com
+name: nm1
+pass: pas1
+surn: sr1
