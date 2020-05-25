@@ -19,7 +19,7 @@ class Profile(models.Model):
 class DetectedObj(models.Model):
 	user = models.ForeignKey(User, related_name="detctedB", on_delete = models.CASCADE)
 	date_detect = models.DateTimeField('Дата обнаружения', auto_now_add = True)
-	link_to_image = models.CharField('Ссылка на изображение', max_length = 300)
+	image = models.ImageField('изображение', blank=True, null=True, upload_to="images_detect/")
 	coord_x = models.IntegerField('Координата по оси Х')
 	coord_y = models.IntegerField('Координата по оси У')
 
@@ -37,7 +37,7 @@ class Camera(models.Model):
 	distance_to_undetect = models.DecimalField('Максимальное расстояние от не брошенной сумки', max_digits = 11, decimal_places = 3, default = 200.0)
 	name_camera = models.CharField('Наименование камеры', max_length = 300, unique = True)
 	url_camera = models.CharField('url камеры', max_length = 400)
-	background = models.TextField('фон', blank=True)
+	background = models.ImageField('фон', blank=True, null=True, upload_to="backgrounds/")
 	local_connect = models.BooleanField('Локальное соединение', default=True)
 
 	def __str__(self):

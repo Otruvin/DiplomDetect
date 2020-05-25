@@ -14,6 +14,9 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = "/media/"
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,8 +85,18 @@ WSGI_APPLICATION = 'AbadDetect.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# psycopg2
 
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dd2fkj23ic190s',
+        'USER': 'nogxtoncycqezh',
+        'PASSWORD': 'd52df566c6640191459fd03a8f11c8121b0f9e6b7b1188cd8a104be1be051884',
+        'HOST': 'ec2-184-72-236-3.compute-1.amazonaws.com',
+        'PORT': '5432'
+    }
+}
 
 
 # Password validation

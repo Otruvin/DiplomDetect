@@ -16,7 +16,12 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import base64
+from authmanage.models import Camera
 
+detectors = []
+
+strategy = EuclideanDistanceStrategy()
+BuilderDetector = BuilderDetector()
 
 '''
 camera = cv2.VideoCapture(0)
@@ -78,21 +83,56 @@ def dynamic_stream(request,stream_path="video"):
         return "error"
 
 
+def decodeFrame(frame):
+    encoded_data = frame.split(',')[1]
+    nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return img
+
+
+def encodeFrame(frame):
+    retval, buffer = cv2.imencode('.jpeg', frame)
+    res_string = base64.b64encode(buffer)
+    return res_string
+
+
 @api_view(["POST"])
 @parser_classes([JSONParser])
 def detectFrame(frame):
     try:
         codeFrame = frame.data['encodedFrame']
-
-
-        encoded_data = codeFrame.split(',')[1]
-        nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        res = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        retval, buffer = cv2.imencode('.jpeg', res)
-        res_string = base64.b64encode(buffer)
+        img = decodeFrame(codeFrame)
+        #res = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        res_string = encodeFrame(img)
 
         return Response({'recieveData': res_string })
+    except ValueError as e:
+        return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(["POST"])
+@parser_classes([JSONParser])
+def getBack(background):
+    try:
+        codeFrame = background.data['encodedFrame']
+        idTemp = background.data['idCam']
+        image = decodeFrame(codeFrame)
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path.replace("\detector", "\media\\backgrounds\\")
+        path = path + str(idTemp) + '.jpeg'
+        cv2.imwrite(path, image)
+        camera = Camera.objects.filter(id = idTemp).update(background = path)
+        return Response({ 'success': "background updated" })
+    except ValueError as e:
+        return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@parser_classes([JSONParser])
+def createDetectors(cameras):
+    try:
+
+        return Response({ 'success': "Detectors had init" })
     except ValueError as e:
         return Response(e.args[0], status.HTTP_400_BAD_REQUEST)

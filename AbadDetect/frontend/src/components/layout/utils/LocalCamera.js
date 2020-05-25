@@ -23,8 +23,9 @@ const LocalCamera = () => {
      
   const webcamRef = React.useRef(null);
   
-  const capture = React.useCallback(
+  /*const captureBackground = React.useCallback(
     () => {
+      console.log(stringsome);
       const imageSrc = webcamRef.current.getScreenshot();
       axios.post('/detector/detectFrame/', {'background': imageSrc}, {
         headers: headers
@@ -34,9 +35,22 @@ const LocalCamera = () => {
       })
     },
     [webcamRef]
-  );
+  );*/
 
-  /*React.useEffect(() => {
+  const updateBackground = (camera) => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    axios.post('/detector/getBack/', { 'encodedFrame' : imageSrc, 'idCam': camera}, {
+      headers: headers
+    })
+    .then((response) => {
+      if (response)
+      {
+        console.log(response)
+      }
+    })
+  }
+
+  React.useEffect(() => {
     const interval = setInterval(() => {
       const imageSrc = webcamRef.current.getScreenshot();
       axios.post('/detector/detectFrame/', {'encodedFrame': imageSrc}, {
@@ -48,9 +62,10 @@ const LocalCamera = () => {
           setLink(link => link = 'data:image/webp;base64,' + response.data['recieveData'])
         }
       })
-    }, 100);
+    }, 15000);
     return () => clearInterval(interval);
-  }, [webcamRef]);*/
+  }, [webcamRef]);
+  
 
   return (
     <Fragment>
@@ -74,7 +89,7 @@ const LocalCamera = () => {
                   width={480}
                   videoConstraints={videoConstraints}
                 />
-                <button onClick={capture} className="btn btn-primary btn-sm">Capture background</button>
+                <button onClick={() => updateBackground(camera.id)} className="btn btn-primary btn-sm">Capture background</button>
               </td>
               <td>
                 <h3>Devise label</h3>
