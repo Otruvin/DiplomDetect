@@ -37,7 +37,7 @@ class Camera(models.Model):
 	distance_to_undetect = models.DecimalField('Максимальное расстояние от не брошенной сумки', max_digits = 11, decimal_places = 3, default = 200.0)
 	name_camera = models.CharField('Наименование камеры', max_length = 300, unique = True)
 	url_camera = models.CharField('url камеры', max_length = 400)
-	background = models.ImageField('фон', blank=True, null=True, upload_to="backgrounds/")
+	background = models.CharField('фон', blank=True, null=True, max_length=500)
 	local_connect = models.BooleanField('Локальное соединение', default=True)
 
 	def __str__(self):

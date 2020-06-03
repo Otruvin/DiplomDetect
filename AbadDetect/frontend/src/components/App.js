@@ -31,7 +31,7 @@ class App extends React.Component
 {
     componentDidMount() {
         store.dispatch(getCameras());
-        store.dispatch(loadUser());
+        //store.dispatch(loadUser());
     }
     render()
     {

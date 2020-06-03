@@ -21,7 +21,7 @@ from authmanage.models import Camera
 detectors = []
 
 strategy = EuclideanDistanceStrategy()
-BuilderDetector = BuilderDetector()
+builderDetector = BuilderDetector()
 
 '''
 camera = cv2.VideoCapture(0)
@@ -102,8 +102,8 @@ def detectFrame(frame):
     try:
         codeFrame = frame.data['encodedFrame']
         img = decodeFrame(codeFrame)
-        #res = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        res_string = encodeFrame(img)
+        res = detectors[0][1].checkFrame(img)
+        res_string = encodeFrame(res)
 
         return Response({'recieveData': res_string })
     except ValueError as e:
@@ -130,9 +130,27 @@ def getBack(background):
 
 @api_view(["POST"])
 @parser_classes([JSONParser])
-def createDetectors(cameras):
+def createDetectors(recivedData):
     try:
-
-        return Response({ 'success': "Detectors had init" })
+        cameras = recivedData.data
+        detectors.clear()
+        
+        for camera in cameras:
+            builderDetector.setMinArea(camera['min_area'])
+            builderDetector.setMaxArea(camera['max_area'])
+            builderDetector.setTimeToDetect(camera['time_to_detected'])
+            builderDetector.setTimeToWarn(camera['time_to_warn'])
+            builderDetector.setTimeToForget(camera['time_to_forget'])
+            builderDetector.setBiggestSize(camera['biggest_size'])
+            builderDetector.setDistanceToUndetect(float(camera['distance_to_undetect']))
+            builderDetector.setConvolutionModel()
+            backgroundDetectorImage = cv2.imread(camera['background'])
+            dimentions = backgroundDetectorImage.shape
+            builderDetector.setDistanceStrategy(strategy)
+            builderDetector.setDimentions(dimentions)
+            builderDetector.setBackground(backgroundDetectorImage)
+            detectors.append([camera['id'], builderDetector.detector])
+        
+        return Response({ 'result' : "Detectors created" })
     except ValueError as e:
         return Response(e.args[0], status.HTTP_400_BAD_REQUEST)

@@ -10,6 +10,9 @@ import cv2
 import os
 import tensorflow as tf
 
+#global graph
+#graph = tf.get_default_graph()
+
 class IStrategySearchDistance(ABC):
 
     @abstractclassmethod
@@ -143,6 +146,7 @@ class Detector:
                             crop_img = np.invert(crop_img)
                             crop_img = (crop_img.astype(np.float32)) / 255.0
                             crop_img = crop_img.reshape(1, 28, 28, 1)
+                            #K.clear_session()
                             with keras.backend.get_session().graph.as_default():
                                 prediction = self.model.predict(crop_img)
                             #K.clear_session()
@@ -232,6 +236,7 @@ class BuilderDetector(IBuilderDetector):
         return detector
 
     def setConvolutionModel(self) -> None:
+        #with graph.as_default():
         self._detector.model = keras.models.load_model('D:\DiplomDetect\AbadDetect\detector\detect_models\convolutional_fashion_model.h5')
     
     def setMinArea(self, area) -> None:
