@@ -7,5 +7,6 @@ urlpatterns = [
     url(r'^stream/$',views.indexscreen),
     url(r'^detectFrame/', views.detectFrame),
     url(r'^getBack/', views.getBack),
-    url(r'^createDetectors/', views.createDetectors)
+    url(r'^createDetectors/', views.createDetectors),
+    url(r'^getDetectedImage/', views.getDetectedImage)
    ]

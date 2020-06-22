@@ -75,7 +75,14 @@ const LocalCamera = () => {
       .then((response) => {
         if(response)
         {
-          setLink(link => link = 'data:image/webp;base64,' + response.data['recieveData'])
+          if (response.data['recieveData'] !== "Camera is not ready" || response.data['recieveData'] !== "Detectors didn't created")
+          {
+            setLink(link => link = 'data:image/webp;base64,' + response.data['recieveData'])
+          }
+          else
+          {
+            setLink(link => link = 'https://b1.pngbarn.com/png/65/309/aesthetic-loading-log-o-png-clip-art-thumbnail.png')
+          }
         }
       })
     }, 300);

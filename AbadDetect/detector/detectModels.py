@@ -9,9 +9,13 @@ import keras.backend as K
 import cv2
 import os
 import tensorflow as tf
+import datetime
+from authmanage.models import DetectedObj, User
+import random
 
 #global graph
 #graph = tf.get_default_graph()
+path = os.path.dirname(os.path.abspath(__file__))
 
 class IStrategySearchDistance(ABC):
 
@@ -28,6 +32,7 @@ class EuclideanDistanceStrategy(IStrategySearchDistance):
 class Detector:
     def __init__(self):
         self.background = None
+        self.logginedUser = None
         self.MIN_AREA = 0
         self.MAX_AREA = 0
         self.TIME_TO_DETECT = 0
@@ -152,6 +157,15 @@ class Detector:
                             #K.clear_session()
                             resClass = np.argmax(prediction[0])
                             if resClass == 8:
+                                if self.top_contour_dict[sumcxcy] == self.TIME_TO_WARN + 2:
+                                    detectedItem = frame[y:y + h, x:x + w]
+                                    pathDetected = path.replace("\detector", "\media\\detected\\")
+                                    hashTemp = random.getrandbits(64)
+                                    pathDetected = pathDetected + str(hashTemp) + '.jpeg'
+                                    cv2.imwrite(pathDetected, detectedItem)
+                                    userTemp = User.objects.get(id=self.logginedUser)
+                                    detectedRow = DetectedObj(user=userTemp, image=pathDetected, coord_x=x, coord_y=y)
+                                    detectedRow.save()
                                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
                                 self.obj_detected_dict[sumcxcy] = self.frameno
                                 self.bags_centroids[sumcxcy] = [cx, cy]
@@ -220,6 +234,10 @@ class IBuilderDetector(ABC):
     def setDistanceStrategy(self, distance_strategy) -> None:
         pass
 
+    @abstractclassmethod
+    def setUser(self, userId) -> None:
+        pass
+
 
 class BuilderDetector(IBuilderDetector):
 
@@ -237,7 +255,8 @@ class BuilderDetector(IBuilderDetector):
 
     def setConvolutionModel(self) -> None:
         #with graph.as_default():
-        self._detector.model = keras.models.load_model('D:\DiplomDetect\AbadDetect\detector\detect_models\convolutional_fashion_model.h5')
+        pathForModel = path + "\detect_models\convolutional_fashion_model.h5"
+        self._detector.model = keras.models.load_model(pathForModel)
     
     def setMinArea(self, area) -> None:
         self._detector.MIN_AREA = area
@@ -271,4 +290,7 @@ class BuilderDetector(IBuilderDetector):
     
     def setDimentions(self, dimentions) -> None:
         self._detector.dimentions = dimentions
+
+    def setUser(self, userId) -> None:
+        self._detector.logginedUser = userId
 

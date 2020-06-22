@@ -16,7 +16,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import parser_classes
 import base64
-from authmanage.models import Camera
+from authmanage.models import Camera, DetectedObj
 
 detectors = []
 
@@ -100,12 +100,16 @@ def encodeFrame(frame):
 @parser_classes([JSONParser])
 def detectFrame(frame):
     try:
-        codeFrame = frame.data['encodedFrame']
-        img = decodeFrame(codeFrame)
-        res = detectors[0][1].checkFrame(img)
-        res_string = encodeFrame(res)
+        if frame is None:
+            return Response({'recieveData' : "Camera is not ready"})
+        if detectors != []:
+            codeFrame = frame.data['encodedFrame']
+            img = decodeFrame(codeFrame)
+            res = detectors[0][1].checkFrame(img)
+            res_string = encodeFrame(res)
+            return Response({'recieveData': res_string })
 
-        return Response({'recieveData': res_string })
+        return Response({'recieveData': "Detectors didn't created" })
     except ValueError as e:
         return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
 
@@ -123,7 +127,28 @@ def getBack(background):
         path = path + str(idTemp) + '.jpeg'
         cv2.imwrite(path, image)
         camera = Camera.objects.filter(id = idTemp).update(background = path)
+        if detectors != []:
+            for detector in detectors:
+                if detector[0] == idTemp:
+                    backgroundImage = cv2.imread(path)
+                    detector[1].background = backgroundImage
+                    break
         return Response({ 'success': "background updated" })
+    except ValueError as e:
+        return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@parser_classes([JSONParser])
+def getDetectedImage(detectedId):
+    try:
+        idNumber = detectedId.data['recievedId']
+        print(idNumber)
+        detectedTemp = DetectedObj.objects.get(id=idNumber)
+        urlDetectedImage = detectedTemp.image
+        imageDetected = cv2.imread(urlDetectedImage)
+        res_string = encodeFrame(imageDetected)
+        return Response({ 'encoded_frame' : res_string })
     except ValueError as e:
         return Response(e.args[0], status.HTTP_400_BAD_REQUEST)
 
@@ -141,6 +166,7 @@ def createDetectors(recivedData):
             builderDetector.setTimeToDetect(camera['time_to_detected'])
             builderDetector.setTimeToWarn(camera['time_to_warn'])
             builderDetector.setTimeToForget(camera['time_to_forget'])
+            builderDetector.setUser(camera['user'])
             builderDetector.setBiggestSize(camera['biggest_size'])
             builderDetector.setDistanceToUndetect(float(camera['distance_to_undetect']))
             builderDetector.setConvolutionModel()

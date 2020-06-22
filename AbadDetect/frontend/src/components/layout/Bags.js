@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { getBags, deleteBag } from '../../actions/bags';
+import axios from 'axios';
 
 export class Bags extends Component {
     static propTypes = {
@@ -10,6 +11,20 @@ export class Bags extends Component {
 
     componentDidMount() {
         this.props.getBags();
+    }
+
+    getImageDetected(idBag) {
+        axios.post('/detector/getDetectedImage/', { 'recievedId' : idBag }, {
+            headers: headers
+        })
+        .then((response) => {
+            //urlString = 'data:image/webp;base64,' + response['encoded_frame']
+            console.log(response)
+            return (
+                //<img src={urlString}/>
+                <div></div>
+            )
+        })
     }
 
     render() {
@@ -30,7 +45,7 @@ export class Bags extends Component {
                         { this.props.bags.map(bag => (
                             <tr key={bag.id}>
                                 <td>{bag.date_detect}</td>
-                                <td><img src={bag.link_to_image} width="50" height="50"/></td>
+                                <td>{this.getImageDetected(bag.id)}</td>
                                 <td>{bag.coord_x}</td>
                                 <td>{bag.coord_y}</td>
                                 <td><button onClick={this.props.deleteBag.bind(this, bag.id)} className="btn btn-danger btn-sm">Delete</button></td>

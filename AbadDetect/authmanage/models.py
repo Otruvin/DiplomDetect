@@ -19,7 +19,7 @@ class Profile(models.Model):
 class DetectedObj(models.Model):
 	user = models.ForeignKey(User, related_name="detctedB", on_delete = models.CASCADE)
 	date_detect = models.DateTimeField('Дата обнаружения', auto_now_add = True)
-	image = models.ImageField('изображение', blank=True, null=True, upload_to="images_detect/")
+	image = models.CharField('изображение', blank=True, null=True, max_length=500)
 	coord_x = models.IntegerField('Координата по оси Х')
 	coord_y = models.IntegerField('Координата по оси У')
 
